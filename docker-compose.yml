@@ -1,0 +1,52 @@
+version: '3.8'
+
+services:
+  # --- DATABASE SERVICE (PostgreSQL) ---
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+    ports:
+      - "5432:5432"
+
+  # --- MESSAGE BROKER (Redis) ---
+  redis:
+    image: redis:7-alpine
+
+  # --- BACKEND API SERVICE (FastAPI) ---
+  api:
+    build: 
+      context: .
+      dockerfile: Dockerfile.backend
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+    volumes:
+      - ./app:/app/app # Live reloading for development
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    depends_on:
+      - db
+      - redis
+
+  # --- AGENT WORKER SERVICE (Celery) ---
+  worker:
+    build: 
+      context: .
+      dockerfile: Dockerfile.backend 
+    command: celery -A app.core.celery_app worker -l info --pool=prefork --concurrency=2
+    volumes:
+      - ./app:/app/app
+    env_file:
+      - .env
+    depends_on:
+      - api
+      - db
+      - redis
+
+volumes:
+  postgres_data:

@@ -1,0 +1,20 @@
+# Backend Core
+fastapi
+uvicorn
+# Data & Database
+sqlmodel # Simplifies FastAPI/SQLAlchemy integration
+psycopg2-binary
+# Task Queue
+celery[redis]
+redis
+# Core Libraries
+pandas
+requests
+# Scraping - Playwright requires specific installation inside Docker
+playwright
+playwright-sync
+# AI/NLP/Document - Use minimum required libraries for MVP
+langchain
+# Document parsing (Tesseract/OCR)
+pytesseract
+Pillow
