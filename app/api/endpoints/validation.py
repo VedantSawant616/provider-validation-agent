@@ -1,23 +1,3 @@
-# app/agents/validation_agent.py
-
-from celery import shared_task
-# You will need to import the database engine later, but for now, just the task decorator.
-
-# --- The Placeholder Core Agent Task (MINIMUM VIABLE CODE) ---
-@shared_task(bind=True)
-def validate_provider_task(self, provider_id: int):
-    """
-    Agent 1: Placeholder task. This will be fully implemented 
-    to perform API validation and web scraping in the next steps.
-    """
-    # Placeholder logic to prevent the API from crashing on import
-    print(f"Agent 1 Task received for Provider ID: {provider_id}. Starting validation process...")
-
-    # *** ACTUAL AGENT LOGIC WILL GO HERE ***
-    
-    # Return a basic dictionary to satisfy Celery
-    return {"status": "Task received and acknowledged"}
-
 # app/api/endpoints/validation.py
 
 from fastapi import APIRouter, Depends
@@ -26,7 +6,7 @@ from typing import List
 
 from app.models.provider import Provider, ProviderBase
 from app.core.database import get_session
-# Import the task from the agent file
+# CRITICAL IMPORT: Import the task from Agent 1
 from app.agents.validation_agent import validate_provider_task 
 
 # --- CRITICAL FIX: Define the router object ---
@@ -45,7 +25,6 @@ def ingest_providers(
     new_providers = []
     
     for data in providers_data:
-        # 1. Create and save the raw provider record
         provider = Provider.from_orm(data)
         session.add(provider)
         new_providers.append(provider)
@@ -56,8 +35,7 @@ def ingest_providers(
     for provider in new_providers:
         session.refresh(provider) 
         
-        # 2. Trigger validation task for each new provider
-        # .delay() sends the task to the Celery worker via Redis
+        # Trigger validation task for each new provider
         validate_provider_task.delay(provider.id) 
 
     return new_providers
