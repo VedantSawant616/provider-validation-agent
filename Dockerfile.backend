@@ -4,7 +4,7 @@ FROM python:3.13-slim
 # Set working directory inside the container
 WORKDIR /app
 
-# Install system dependencies (crucial for stability and libraries)
+# --- STEP 1: Install System Dependencies ---
 RUN apt-get update && apt-get install -y \
     gcc \
     libpq-dev \
@@ -12,13 +12,16 @@ RUN apt-get update && apt-get install -y \
     libtesseract-dev \
     libjpeg-dev \
     zlib1g-dev \
-    # Install browser binaries for Playwright
-    && playwright install --with-deps chromium \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy and install Python dependencies
+# --- STEP 2: Install Python Dependencies ---
+# This installs the 'playwright' Python package
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
+
+# --- STEP 3: Install Playwright Browsers (This command is now available) ---
+# This installs the actual browser binaries
+RUN playwright install --with-deps chromium
 
 # Copy the rest of the application code
 COPY app/ /app/app
