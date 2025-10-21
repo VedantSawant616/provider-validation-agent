@@ -17,3 +17,5 @@ langchain
 # Document parsing (Tesseract/OCR)
 pytesseract
 Pillow
+# Configuration Fix
+pydantic-settings  # <-- ADD THIS LINE
