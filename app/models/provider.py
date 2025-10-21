@@ -1,8 +1,12 @@
 from sqlmodel import Field, SQLModel, Relationship
-from typing import Optional, List
+from typing import Optional, List, TYPE_CHECKING
 from datetime import datetime
 
-# --- Audit and Evidence Models ---
+# --- Forward References for Relationships (Crucial for SQLModel) ---
+# If ValidationResult is defined later in this same file, 
+# we need to reference it as a string.
+
+# --- 1. Audit and Evidence Models ---
 
 class ValidationResultBase(SQLModel):
     agent_type: str = Field(index=True)
@@ -16,6 +20,7 @@ class ValidationResult(ValidationResultBase, table=True):
     provider_id: int = Field(foreign_key="provider.id")
     timestamp: datetime = Field(default_factory=datetime.utcnow)
     
+    # Relationship back to the Provider
     provider: "Provider" = Relationship(back_populates="validations")
 
 
@@ -30,7 +35,7 @@ class QAFlag(QAFlagBase, table=True):
     timestamp: datetime = Field(default_factory=datetime.utcnow)
 
 
-# --- Core Provider Record Model ---
+# --- 2. Core Provider Record Model ---
 
 class ProviderBase(SQLModel):
     input_name: str
@@ -38,11 +43,12 @@ class ProviderBase(SQLModel):
     input_address: Optional[str]
     pdf_path: Optional[str]
     
-    # Enriched Fields (Agent 2 & 4)
-    npi: Optional[str]
-    specialty: Optional[str]
+    # Enriched Fields (Filled by Agent 2 & 4) 
+    # FIX: Adding '= None' makes these fields OPTIONAL in the API POST request.
+    npi: Optional[str] = None       
+    specialty: Optional[str] = None 
     
-    # QA/Status Fields (Agent 3)
+    # QA/Status Fields (Set by Agent 3)
     status: str = Field(default="RAW")
     final_confidence: float = Field(default=0.0)
 
@@ -52,11 +58,9 @@ class Provider(ProviderBase, table=True):
     created_at: datetime = Field(default_factory=datetime.utcnow)
     updated_at: datetime = Field(default_factory=datetime.utcnow)
     
-    # Relationships
-    validations: List[ValidationResult] = Relationship(back_populates="provider")
-    qa_flags: List[QAFlag] = Relationship()
-
-# Fix circular import issue for SQLModel
-from typing import TYPE_CHECKING
-if TYPE_CHECKING:
-    from .audit import ValidationResult
+    # Relationships (Using string literals for forward reference)
+    validations: List["ValidationResult"] = Relationship(back_populates="provider")
+    qa_flags: List["QAFlag"] = Relationship(back_populates="provider")
+    
+# Add the reverse relationship link to QAFlag
+QAFlag.provider = Relationship(back_populates="qa_flags")
