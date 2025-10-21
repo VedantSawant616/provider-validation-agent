@@ -2,7 +2,7 @@
 fastapi
 uvicorn
 # Data & Database
-sqlmodel # Simplifies FastAPI/SQLAlchemy integration
+sqlmodel
 psycopg2-binary
 # Task Queue
 celery[redis]
@@ -10,10 +10,9 @@ redis
 # Core Libraries
 pandas
 requests
-# Scraping - Playwright requires specific installation inside Docker
+# Scraping - ONLY INSTALL 'playwright'
 playwright
-playwright-sync
-# AI/NLP/Document - Use minimum required libraries for MVP
+# AI/NLP/Document
 langchain
 # Document parsing (Tesseract/OCR)
 pytesseract
