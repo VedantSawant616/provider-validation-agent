@@ -25,7 +25,14 @@ def ingest_providers(
     new_providers = []
     
     for data in providers_data:
-        provider = Provider.from_orm(data)
+        # 1. FIX: Use ProviderBase for initial Pydantic validation (safe with raw JSON)
+        # We need to explicitly use model_validate here because SQLModel's from_orm/model_validate 
+        # on the table model (Provider) was crashing due to SQLAlchemy mapping issues during threadpool execution.
+        provider_base = ProviderBase.model_validate(data)
+        
+        # 2. Convert the validated base model data into the Provider table object
+        provider = Provider.model_validate(provider_base.model_dump())
+        
         session.add(provider)
         new_providers.append(provider)
 
