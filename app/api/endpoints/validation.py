@@ -1,3 +1,23 @@
+# app/agents/validation_agent.py
+
+from celery import shared_task
+# You will need to import the database engine later, but for now, just the task decorator.
+
+# --- The Placeholder Core Agent Task (MINIMUM VIABLE CODE) ---
+@shared_task(bind=True)
+def validate_provider_task(self, provider_id: int):
+    """
+    Agent 1: Placeholder task. This will be fully implemented 
+    to perform API validation and web scraping in the next steps.
+    """
+    # Placeholder logic to prevent the API from crashing on import
+    print(f"Agent 1 Task received for Provider ID: {provider_id}. Starting validation process...")
+
+    # *** ACTUAL AGENT LOGIC WILL GO HERE ***
+    
+    # Return a basic dictionary to satisfy Celery
+    return {"status": "Task received and acknowledged"}
+
 # app/api/endpoints/validation.py
 
 from fastapi import APIRouter, Depends
